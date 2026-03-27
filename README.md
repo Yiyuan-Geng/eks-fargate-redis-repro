@@ -60,6 +60,59 @@ aws-vault exec sso-tse-sandbox-account-admin -- kubectl get pod <REDIS_POD> -n f
 `DD_EXTRA_TAGS` set, confirming that `datadog.tags` from Helm values are not
 propagated to the injected sidecar.
 
+## Workaround
+
+The `datadog.tags` Helm value only configures tags on the Cluster Agent -- it does
+**not** propagate them to the admission controller injected sidecar agent. To fix
+this, use **sidecar profiles** to explicitly inject `DD_TAGS` into the sidecar:
+
+```yaml
+clusterAgent:
+  admissionController:
+    agentSidecarInjection:
+      enabled: true
+      provider: "fargate"
+      profiles:
+        - env:
+            - name: DD_TAGS
+              value: "env:automation cluster:eks-yiyuan-geng portfolio:ce host-portfolio:ce product:platform source:eks owner:prog-devops-ce@symplr.com api-ident:89315"
+```
+
+For Terraform users, the equivalent config is:
+
+```hcl
+admissionController = {
+  enabled = true
+  agentSidecarInjection = {
+    enabled  = true
+    provider = "fargate"
+    profiles = [
+      {
+        env = [
+          {
+            name  = "DD_TAGS"
+            value = "env:${var.environment} cluster:${var.cluster_name} portfolio:ce host-portfolio:ce product:platform source:eks owner:prog-devops-ce@symplr.com api-ident:${local.api_ident}"
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+After applying the change, **restart your application pods** so the admission
+controller re-injects the sidecar with the updated `DD_TAGS`.
+
+### Verifying the Fix
+
+```bash
+aws-vault exec sso-tse-sandbox-account-admin -- kubectl get pod <REDIS_POD> -n fargate \
+  -o jsonpath='{range .spec.containers[*]}{.name}{"\n"}{range .env[*]}  {.name}={.value}{"\n"}{end}{"\n"}{end}'
+```
+
+The `datadog-agent-injected` container should now show `DD_TAGS` with all configured
+tags, including `owner:prog-devops-ce@symplr.com`.
+
 ## Cleanup
 
 ```bash
