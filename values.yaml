@@ -28,3 +28,7 @@ clusterAgent:
     agentSidecarInjection:
       enabled: true
       provider: "fargate"
+      profiles:
+        - env:
+            - name: DD_TAGS
+              value: "env:automation cluster:eks-yiyuan-geng portfolio:ce host-portfolio:ce product:platform source:eks owner:prog-devops-ce@symplr.com api-ident:89315"
