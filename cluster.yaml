@@ -1,0 +1,17 @@
+apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+metadata:
+  name: eks-yiyuan-geng
+  region: us-east-1
+  tags:
+    user: Yiyuan.Geng
+    team: technical-support-engineer
+nodeGroups:
+  - name: standard
+    instanceType: t3.medium
+    desiredCapacity: 2
+    volumeSize: 30
+fargateProfiles:
+  - name: fp-default
+    selectors:
+      - namespace: fargate

@@ -1,0 +1,30 @@
+datadog:
+  apiKeyExistingSecret: datadog-secret
+  site: "datadoghq.com"
+  # apiKey: <REDACTED> -- use apiKeyExistingSecret instead
+  kubeStateMetricsEnabled: false
+  kubeStateMetricsCore:
+    enabled: true
+  clusterName: eks-yiyuan-geng
+  tags:
+    - "env:automation"
+    - "cluster:eks-yiyuan-geng"
+    - "portfolio:ce"
+    - "host-portfolio:ce"
+    - "product:platform"
+    - "source:eks"
+    - "owner:prog-devops-ce@symplr.com"
+    - "api-ident:89315"
+agents:
+  enabled: false
+clusterAgent:
+  enabled: true
+  replicas: 1
+  token: "abcdabcdabcdabcdabcdabcdabcdabcd"
+  metricsProvider:
+    enabled: true
+  admissionController:
+    enabled: true
+    agentSidecarInjection:
+      enabled: true
+      provider: "fargate"
